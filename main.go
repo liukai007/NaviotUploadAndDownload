@@ -12,8 +12,8 @@ func main() {
 	fmt.Println(fileMetadata.Fid)
 	fmt.Println(fileMetadata.Md5Sum)
 
-	common.StoreMetadata("g:/123", &fileMetadata)
-	fileMetadata1, _ := common.LoadMetadata("g:/123")
+	common.StoreMetadata("e:/store/"+fileMetadata.FileName+".slice", &fileMetadata)
+	fileMetadata1, _ := common.LoadMetadata("e:/store/" + fileMetadata.FileName + ".slice")
 
 	fmt.Println("11====" + fileMetadata1.Fid)
 }
