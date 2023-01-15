@@ -36,6 +36,24 @@ func StoreMetadata(filePath string, metadata *FileMetadata) error {
 	return nil
 }
 
+// LoadMetadata 加载元数据文件信息
+func LoadMetadata(filePath string) (*FileMetadata, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		fmt.Println("获取文件状态失败，文件路径：", filePath)
+		return nil, err
+	}
+
+	var metadata FileMetadata
+	fileData := gob.NewDecoder(file)
+	err = fileData.Decode(&metadata)
+	if err != nil {
+		fmt.Println("格式化文件元数据失败, err", err)
+		return nil, err
+	}
+	return &metadata, nil
+}
+
 func ProduceMetaData(filePath string) FileMetadata {
 	uuid, _ := GetUUID()
 	md5Value, _ := FileMD5(filePath)
