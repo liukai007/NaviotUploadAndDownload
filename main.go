@@ -11,6 +11,7 @@ func main() {
 	fileMetadata := common.ProduceMetaData("C:\\Program Files\\Go\\src\\runtime\\internal\\sys\\zversion.go")
 	fmt.Println(fileMetadata.Fid)
 	fmt.Println(fileMetadata.Md5Sum)
+	fmt.Println(fileMetadata.SliceNum)
 
 	common.StoreMetadata("e:/store/"+fileMetadata.FileName+".slice", &fileMetadata)
 	fileMetadata1, _ := common.LoadMetadata("e:/store/" + fileMetadata.FileName + ".slice")
