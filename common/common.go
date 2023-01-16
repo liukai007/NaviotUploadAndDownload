@@ -18,11 +18,12 @@ type FileMetadata struct {
 }
 
 // StoreMetadata 保存文件元数据
-func StoreMetadata(filePath string, metadata *FileMetadata) error {
+func StoreMetadata(metaDataSavePath string, metadata *FileMetadata) error {
+	metaDataSavePath = metaDataSavePath + ".metaData"
 	// 写入文件
-	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0666)
+	file, err := os.OpenFile(metaDataSavePath, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
-		fmt.Printf("写元数据文件%s失败\n", filePath)
+		fmt.Printf("写元数据文件%s失败\n", metaDataSavePath)
 		return err
 	}
 	defer file.Close()
@@ -30,7 +31,7 @@ func StoreMetadata(filePath string, metadata *FileMetadata) error {
 	enc := gob.NewEncoder(file)
 	err = enc.Encode(metadata)
 	if err != nil {
-		fmt.Printf("写元数据文件%s失败\n", filePath)
+		fmt.Printf("写元数据文件%s失败\n", metaDataSavePath)
 		return err
 	}
 	return nil

@@ -17,6 +17,8 @@ func ShardFile(filePath string) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	fileMetadata := ProduceMetaData(filePath)
+	StoreMetadata(filePath, &fileMetadata)
 
 	num := int(math.Ceil(float64(fileInfo.Size()) / float64(chunkSize)))
 
@@ -36,8 +38,15 @@ func ShardFile(filePath string) {
 		}
 
 		fi.Read(b)
+		dirPathStr := uploadDir + "\\" + fileMetadata.Fid
+		if !IsDir(dirPathStr) {
+			err := os.Mkdir(dirPathStr, 0666)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
 
-		f, err := os.OpenFile("./"+strconv.Itoa(int(i))+".db", os.O_CREATE|os.O_WRONLY, os.ModePerm)
+		f, err := os.OpenFile(dirPathStr+"\\"+strconv.Itoa(int(i))+".db", os.O_CREATE|os.O_WRONLY, os.ModePerm)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -56,7 +65,7 @@ func MergeFile(filePath string) {
 		return
 	}
 	for i := 1; i <= num; i++ {
-		f, err := os.OpenFile("./"+strconv.Itoa(int(i))+".db", os.O_RDONLY, os.ModePerm)
+		f, err := os.OpenFile(downloadDir+"/"+strconv.Itoa(int(i))+".db", os.O_RDONLY, os.ModePerm)
 		if err != nil {
 			fmt.Println(err)
 			return
