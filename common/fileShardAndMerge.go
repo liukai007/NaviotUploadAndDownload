@@ -8,8 +8,11 @@ import (
 	"strconv"
 )
 
+var uploadDir = "E:\\store"
+var downloadDir = "E:\\down"
+
 func ShardFile(filePath string) {
-	chunkSize := SliceBytes
+	chunkSize := int64(SliceBytes)
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
 		fmt.Println(err)
@@ -25,7 +28,7 @@ func ShardFile(filePath string) {
 	b := make([]byte, chunkSize)
 	var i int64 = 1
 	for ; i <= int64(num); i++ {
-		ss := int64(i-1) * int64(chunkSize)
+		ss := (i - 1) * (chunkSize)
 		fi.Seek(ss, 0)
 
 		if len(b) > int((fileInfo.Size() - ss)) {
