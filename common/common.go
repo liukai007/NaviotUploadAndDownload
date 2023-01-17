@@ -8,6 +8,13 @@ import (
 	"time"
 )
 
+// ServiceConfig 配置文件结构
+type ServiceConfig struct {
+	Port     int
+	Address  string
+	StoreDir string
+}
+
 type FileMetadata struct {
 	Fid        string    // 操作文件ID，随机生成的UUID
 	FileSize   int64     // 文件大小（字节单位）
