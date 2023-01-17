@@ -56,17 +56,29 @@ func ShardFile(filePathStr string) {
 		f.Close()
 	}
 	fi.Close()
+	//合并校验，校验之后删除合并文件，如果校验失败重新上传，重复最多3次
+	MergeFile(uploadDir+"\\"+filepath.Base(filePathStr), uploadDir+"\\"+fileMetadata.Fid, fileMetadata)
+	//校验
+	verifyMD5Bool := VerifyFileMD5(fileMetadata, uploadDir+"\\"+filepath.Base(filePathStr))
+	if !verifyMD5Bool {
+
+	}
+
+	DelFile(uploadDir + "\\" + filepath.Base(filePathStr))
+
 }
 
-func MergeFile(filePath string) {
-	num := 104
-	fii, err := os.OpenFile(filePath+"1", os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.ModePerm)
+//第一个参数是生成文件的目录，第二个参数是分片所在目录
+func MergeFile(filePath string, shardPath string, metadata FileMetadata) {
+	num := metadata.SliceNum
+	fii, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.ModePerm)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	for i := 1; i <= num; i++ {
-		f, err := os.OpenFile(downloadDir+"/"+strconv.Itoa(int(i))+".db", os.O_RDONLY, os.ModePerm)
+	for i := 1; i <= int(num); i++ {
+		//f, err := os.OpenFile(downloadDir+"/"+strconv.Itoa(int(i))+".db", os.O_RDONLY, os.ModePerm)
+		f, err := os.OpenFile(shardPath+"/"+strconv.Itoa(int(i))+".db", os.O_RDONLY, os.ModePerm)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -79,4 +91,24 @@ func MergeFile(filePath string) {
 		fii.Write(b)
 		f.Close()
 	}
+	err1 := fii.Close()
+	if err1 != nil {
+		fmt.Println()
+	}
+}
+
+//校验MD5
+func VerifyFileMD5(metadata FileMetadata, filepathStr string) bool {
+	md5Str, err := FileMD5(filepathStr)
+	if err != nil {
+		fmt.Println("MD5生成报错")
+		fmt.Println("校验失败")
+		return false
+	}
+	if md5Str == metadata.Md5Sum {
+		fmt.Println("校验成功")
+		return true
+	}
+	fmt.Println("校验失败")
+	return false
 }

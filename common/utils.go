@@ -41,12 +41,14 @@ func GetFileSize(path string) int64 {
 
 //MD5计算
 func FileMD5(filePath string) (string, error) {
+
 	file, err := os.Open(filePath)
 	if err != nil {
 		return "", err
 	}
 	hash := md5.New()
 	_, _ = io.Copy(hash, file)
+	defer file.Close()
 	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
@@ -77,5 +79,22 @@ func DirCreate(dirPathStr string) {
 		if err != nil {
 			fmt.Println(err)
 		}
+	}
+}
+
+//删除文件
+func DelFile(filePathStr string) {
+	if !IsFile(filePathStr) {
+		fmt.Println("文件已经不存在")
+	}
+	err := os.Remove(filePathStr)
+	if err != nil {
+		//如果删除失败则输出 file remove Error!
+		fmt.Println("文件删除失败可能文件正在被使用")
+		//输出错误详细信息
+		fmt.Printf("%s", err)
+	} else {
+		//如果删除成功则输出 file remove OK!
+		fmt.Print("文件删除成功")
 	}
 }
