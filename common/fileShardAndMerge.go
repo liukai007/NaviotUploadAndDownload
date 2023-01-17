@@ -13,6 +13,13 @@ var uploadDir = "E:\\store"
 var downloadDir = "E:\\down"
 
 func ShardFile(filePathStr string) {
+	//判断文件是否已经上传过
+	base1 := filepath.Base(filePathStr)
+	if IsFile(uploadDir + "\\" + base1 + ".metaData") {
+		fmt.Println("文件已经上传过,不用再上传了,也不需要校验了")
+		return
+	}
+
 	chunkSize := int64(SliceBytes)
 	fileInfo, err := os.Stat(filePathStr)
 	if err != nil {
@@ -60,18 +67,18 @@ func ShardFile(filePathStr string) {
 	MergeFile(uploadDir+"\\"+filepath.Base(filePathStr), uploadDir+"\\"+fileMetadata.Fid, fileMetadata)
 	//校验
 	verifyMD5Bool := VerifyFileMD5(fileMetadata, uploadDir+"\\"+filepath.Base(filePathStr))
-	if !verifyMD5Bool {
-
-	}
-
 	DelFile(uploadDir + "\\" + filepath.Base(filePathStr))
-
+	if !verifyMD5Bool {
+		DelFile(uploadDir + "\\" + filepath.Base(filePathStr) + ".metaData")
+		DelFileDir(uploadDir + "\\" + fileMetadata.Fid)
+	}
 }
 
-//第一个参数是生成文件的目录，第二个参数是分片所在目录
+//第一个参数是生成文件的目录，第二个参数是分片所在目录,第三个参数是文件元数据
 func MergeFile(filePath string, shardPath string, metadata FileMetadata) {
 	num := metadata.SliceNum
 	fii, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.ModePerm)
+	defer fii.Close()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -91,10 +98,6 @@ func MergeFile(filePath string, shardPath string, metadata FileMetadata) {
 		fii.Write(b)
 		f.Close()
 	}
-	err1 := fii.Close()
-	if err1 != nil {
-		fmt.Println()
-	}
 }
 
 //校验MD5
@@ -102,13 +105,13 @@ func VerifyFileMD5(metadata FileMetadata, filepathStr string) bool {
 	md5Str, err := FileMD5(filepathStr)
 	if err != nil {
 		fmt.Println("MD5生成报错")
-		fmt.Println("校验失败")
+		fmt.Println("校验失败,请再次重新上传(MD5生成报错)")
 		return false
 	}
 	if md5Str == metadata.Md5Sum {
 		fmt.Println("校验成功")
 		return true
 	}
-	fmt.Println("校验失败")
+	fmt.Println("校验失败,请再次重新上传")
 	return false
 }

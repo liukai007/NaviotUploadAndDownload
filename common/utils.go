@@ -98,3 +98,14 @@ func DelFile(filePathStr string) {
 		fmt.Print("文件删除成功")
 	}
 }
+
+//删除文件夹和里面的内容
+func DelFileDir(dirPathStr string) {
+	err := os.RemoveAll(dirPathStr)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("文件夹删除失败")
+	} else {
+		fmt.Println("文件夹删除成功")
+	}
+}
