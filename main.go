@@ -256,13 +256,13 @@ func MainShow(w fyne.Window) {
 		fmt.Println("网络地址是:" + wl)
 		fmt.Println("广播地址是:" + gb)
 		fmt.Println("主机个数是:" + strconv.FormatInt(int64(hostSum), 10))
-		var wg sync.WaitGroup
+		var wg2 sync.WaitGroup
 		for i := list.Front(); i != nil; i = i.Next() {
 			if stopSearch {
 				fmt.Println("停止搜索")
 				break
 			}
-			wg.Add(1)
+			wg2.Add(1)
 			//fmt.Printf("item = %v\n", i.Value)
 			ipAddressTmp := fmt.Sprint(i.Value)
 
@@ -274,10 +274,10 @@ func MainShow(w fyne.Window) {
 					fmt.Println(ipAddressTmp + " 链接成功")
 					models.WriteFileAppend("hostIpAddress.txt", ipAddressTmp+"\n")
 				}
-				wg.Done()
+				wg2.Done()
 			}()
 		}
-		wg.Wait()
+		wg2.Wait()
 		//其他IP和subnetMark
 		var wg1 sync.WaitGroup
 		tmpText := entryOtherIpSubnetMask.Text

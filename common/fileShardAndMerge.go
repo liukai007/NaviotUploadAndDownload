@@ -46,6 +46,7 @@ func ShardFile(filePathStr string, isAgain bool) {
 	}
 	b := make([]byte, chunkSize)
 	var i int64 = 1
+	fmt.Println("分片开始上传")
 	for ; i <= int64(num); i++ {
 		ss := (i - 1) * (chunkSize)
 		fi.Seek(ss, 0)
@@ -64,6 +65,7 @@ func ShardFile(filePathStr string, isAgain bool) {
 		}
 
 		f, err := os.OpenFile(dirPathStr+"\\"+strconv.Itoa(int(i))+".db", os.O_CREATE|os.O_WRONLY, os.ModePerm)
+		fmt.Println(strconv.Itoa(int(i)) + ".db" + "分片上传中")
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -71,6 +73,7 @@ func ShardFile(filePathStr string, isAgain bool) {
 		f.Write(b)
 		f.Close()
 	}
+	fmt.Println("分片结束上传")
 	fi.Close()
 	//合并校验，校验之后删除合并文件，如果校验失败重新上传，重复最多3次
 	MergeFile(UploadDir+"\\"+filepath.Base(filePathStr), UploadDir+"\\"+fileMetadata.Fid, fileMetadata)
@@ -85,6 +88,7 @@ func ShardFile(filePathStr string, isAgain bool) {
 
 //第一个参数是生成文件的目录，第二个参数是分片所在目录,第三个参数是文件元数据
 func MergeFile(filePath string, shardPath string, metadata FileMetadata) {
+	fmt.Println("文件合并开始")
 	num := metadata.SliceNum
 	fii, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.ModePerm)
 	defer fii.Close()
@@ -107,10 +111,13 @@ func MergeFile(filePath string, shardPath string, metadata FileMetadata) {
 		fii.Write(b)
 		f.Close()
 	}
+	fmt.Println("文件合并结束")
 }
 
 //校验MD5
 func VerifyFileMD5(metadata FileMetadata, filepathStr string) bool {
+	fmt.Println("文件校验开始")
+	defer fmt.Println("文件校验结束")
 	md5Str, err := FileMD5(filepathStr)
 	if err != nil {
 		fmt.Println("MD5生成报错")
