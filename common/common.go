@@ -19,6 +19,7 @@ type FileMetadata struct {
 
 // StoreMetadata 保存文件元数据
 func StoreMetadata(metaDataSavePath string, metadata *FileMetadata) error {
+	DirCreate(filepath.Dir(metaDataSavePath))
 	metaDataSavePath = metaDataSavePath + ".metaData"
 	// 写入文件
 	file, err := os.OpenFile(metaDataSavePath, os.O_WRONLY|os.O_CREATE, 0666)

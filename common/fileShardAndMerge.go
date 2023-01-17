@@ -5,24 +5,25 @@ import (
 	"io/ioutil"
 	"math"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
 var uploadDir = "E:\\store"
 var downloadDir = "E:\\down"
 
-func ShardFile(filePath string) {
+func ShardFile(filePathStr string) {
 	chunkSize := int64(SliceBytes)
-	fileInfo, err := os.Stat(filePath)
+	fileInfo, err := os.Stat(filePathStr)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fileMetadata := ProduceMetaData(filePath)
-	StoreMetadata(filePath, &fileMetadata)
+	fileMetadata := ProduceMetaData(filePathStr)
+	StoreMetadata(uploadDir+"\\"+filepath.Base(filePathStr), &fileMetadata)
 
 	num := int(math.Ceil(float64(fileInfo.Size()) / float64(chunkSize)))
 
-	fi, err := os.OpenFile(filePath, os.O_RDONLY, os.ModePerm)
+	fi, err := os.OpenFile(filePathStr, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		fmt.Println(err)
 		return

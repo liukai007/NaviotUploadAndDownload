@@ -90,14 +90,20 @@
 package main
 
 import (
+	"fmt"
 	"naviotUploadAndDownload/common"
+	"path/filepath"
 )
 
 const chunkSize int64 = 4 << 20
 
 func main() {
-	filePath := "E:\\store\\naviot-gateway-1.0-SNAPSHOT.jar"
-	common.ShardFile(filePath)
+	filePath1 := "E:\\store2\\naviot-gateway-1.0-SNAPSHOT.jar"
+
+	fmt.Println(filepath.Base(filePath1))
+	fmt.Println(filepath.Dir(filePath1))
+	common.ShardFile(filePath1)
+
 	//common.MergeFile(filePath)
 	//fmt.Println(common.FileMD5(filePath))
 	//fmt.Println(common.FileMD5(filePath + "1"))

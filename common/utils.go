@@ -60,8 +60,22 @@ func GetUUID() (string, error) {
 	return uuid.String(), err
 }
 
+//计算文件切片数量
 func GetSliceNum(filesize int64) int64 {
 	// 计算文件切片数量
 	sliceNum := int(math.Ceil(float64(filesize) / float64(SliceBytes)))
 	return int64(sliceNum)
+}
+
+//文件目录不存在就创建
+func DirCreate(dirPathStr string) {
+	if IsFile(dirPathStr) {
+		fmt.Println("这个路径是一个文件直接路径")
+	}
+	if !IsDir(dirPathStr) {
+		err := os.Mkdir(dirPathStr, 0666)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 }
