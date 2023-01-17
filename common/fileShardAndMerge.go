@@ -12,11 +12,20 @@ import (
 var uploadDir = "E:\\store"
 var downloadDir = "E:\\down"
 
-func ShardFile(filePathStr string) {
+func ShardFile(filePathStr string, isAgain bool) {
+	//是否重新上传
+	if isAgain {
+		fmt.Println("重新上传删除之前上传的文件")
+		fileMetadata1, err := LoadMetadata(uploadDir + "\\" + filepath.Base(filePathStr) + ".metaData")
+		if err == nil {
+			DelFileDir(uploadDir + "\\" + fileMetadata1.Fid)
+			DelFile(uploadDir + "\\" + filepath.Base(filePathStr) + ".metaData")
+		}
+	}
 	//判断文件是否已经上传过
 	base1 := filepath.Base(filePathStr)
 	if IsFile(uploadDir + "\\" + base1 + ".metaData") {
-		fmt.Println("文件已经上传过,不用再上传了,也不需要校验了")
+		fmt.Println("同名文件已经上传过,不用再上传了,也不需要校验了")
 		return
 	}
 

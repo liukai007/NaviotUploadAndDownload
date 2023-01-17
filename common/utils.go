@@ -95,7 +95,7 @@ func DelFile(filePathStr string) {
 		fmt.Printf("%s", err)
 	} else {
 		//如果删除成功则输出 file remove OK!
-		fmt.Print("文件删除成功")
+		fmt.Println("文件删除成功")
 	}
 }
 

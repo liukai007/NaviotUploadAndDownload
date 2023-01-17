@@ -41,6 +41,7 @@ func StoreMetadata(metaDataSavePath string, metadata *FileMetadata) error {
 // LoadMetadata 加载元数据文件信息
 func LoadMetadata(filePath string) (*FileMetadata, error) {
 	file, err := os.Open(filePath)
+	defer file.Close()
 	if err != nil {
 		fmt.Println("获取文件状态失败，文件路径：", filePath)
 		return nil, err

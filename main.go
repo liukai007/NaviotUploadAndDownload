@@ -102,7 +102,9 @@ func main() {
 
 	fmt.Println(filepath.Base(filePath1))
 	fmt.Println(filepath.Dir(filePath1))
-	common.ShardFile(filePath1)
+	common.ShardFile(filePath1, false)
+	common.ShardFile(filePath1, true)
+	common.ShardFile(filePath1, false)
 
 	//common.MergeFile(filePath)
 	//fmt.Println(common.FileMD5(filePath))
