@@ -71,9 +71,11 @@ func findRetrySeq(dirPath string, metadata *common.FileMetadata) []int {
 func download(w http.ResponseWriter, request *http.Request) {
 	//文件名
 	filename := request.FormValue("filename")
+	//文件目录
+	dirStr := request.FormValue("dirStr")
 
 	//打开文件
-	filePath := path.Join(confs.StoreDir, filename)
+	filePath := path.Join(confs.StoreDir, dirStr, filename)
 	file, err := os.Open(filePath)
 	if err != nil {
 		fmt.Printf("打开文件%s失败, err:%s\n", filePath, err)
@@ -196,7 +198,7 @@ func MainShow(w fyne.Window) {
 	//本机IP文本框
 	entryLocalIp := widget.NewEntry()           //文本输入框
 	entryOtherIpSubnetMask := widget.NewEntry() //文本输入框
-	entry1 := widget.NewEntry()                 //文本输入框
+	entry1 := widget.NewEntry()                 //下发文件路径先上传，再下载
 	entrySendPath := widget.NewEntry()          //下发文件目录
 	labelSendPathName := widget.NewLabel("下发文件目录:")
 	//执行命令
@@ -475,6 +477,14 @@ func MainShow(w fyne.Window) {
 
 	/****下发 start**************/
 	downloaderBt := widget.NewButton("下发", func() {
+		fmt.Println("检测是否已经上传过,没有上传就先上传")
+		content := strings.TrimSpace(entry1.Text)
+		if content == "" {
+			fmt.Println("上传文件路径不能为空")
+			return
+		}
+		common.ShardFile(content, false)
+
 		fmt.Println("开始下发,目前下发的IP有")
 		jsonStr := models.GetSmallFileContent("hostIpAddress.txt")
 		jsonStr = strings.TrimSpace(jsonStr)
