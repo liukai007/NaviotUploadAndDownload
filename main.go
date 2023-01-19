@@ -515,7 +515,56 @@ func MainShow(w fyne.Window) {
 			}()
 		}
 	})
-	downloaderBox := container.NewVBox(downloaderBt)
+	//下发成功日志
+	verifyDownloaderFileBt := widget.NewButton("下发日志查看", func() {
+		fmt.Println("下发日志生成中")
+		content := strings.TrimSpace(entry1.Text)
+		if content == "" {
+			fmt.Println("下发日志生成失败，下发文件路径为空")
+			return
+		}
+		fmt.Println("开始下发,目前下发的IP有")
+		jsonStr := models.GetSmallFileContent("hostIpAddress.txt")
+		jsonStr = strings.TrimSpace(jsonStr)
+		if jsonStr == "" {
+			fmt.Println("下发日志生成失败，没有需要下发的主机")
+			return
+		}
+		strs := strings.Split(jsonStr, "\n")
+		var a map[string]string
+		a = make(map[string]string)
+		for i := range strs {
+			a[strs[i]] = "1"
+		}
+		sendFileName := path.Base(entry1.Text)
+		sendFilePath := entrySendPath.Text
+		if common.IsFile("下发日志=" + sendFileName + ".log") {
+			models.RemoveFile("下发日志=" + sendFileName + ".log")
+		}
+		for s := range a {
+			fmt.Println(s)
+			var mutex sync.Mutex
+			go func() {
+				statusCode, content, err := models.HttpGetGetValue("http://" + s + ":27777/verifyDownloadFile?filename=" +
+					sendFileName + "&downloadDir=" + sendFilePath)
+				mutex.Lock()
+				if err != nil {
+					models.WriteFileAppend("下发日志="+sendFileName+".log", sendFileName+" "+" 发送失败 主机("+s+")目录("+sendFilePath+")\n")
+					return
+				}
+				if statusCode == 200 {
+					if content == "true" {
+						models.WriteFileAppend("下发日志="+sendFileName+".log", sendFileName+" "+" 发送成功 主机("+s+")目录("+sendFilePath+")\n")
+					} else {
+						models.WriteFileAppend("下发日志="+sendFileName+".log", sendFileName+" "+" 发送失败 主机("+s+")目录("+sendFilePath+")\n")
+					}
+				}
+				mutex.Unlock()
+			}()
+		}
+	})
+
+	downloaderBox := container.NewVBox(downloaderBt, verifyDownloaderFileBt)
 	downloaderBoxCenter := container.NewCenter(downloaderBox)
 	/****下发 end**************/
 
