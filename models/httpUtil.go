@@ -37,9 +37,8 @@ func HttpGet(url string) error {
 func HttpGetGetValue(url string) (int, string, error) {
 	// 请求xx网站首页
 	resp, err := http.Get(url)
-
 	if err != nil {
-		return resp.StatusCode, "", err
+		return 400, "", err
 	}
 
 	// 延迟关闭

@@ -541,27 +541,39 @@ func MainShow(w fyne.Window) {
 		if common.IsFile("下发日志=" + sendFileName + ".log") {
 			models.RemoveFile("下发日志=" + sendFileName + ".log")
 		}
+		f, err := os.Create("下发日志=" + sendFileName + ".log")
+		if err != nil {
+			//panic(err)
+		}
+		wr := &SyncWriter{sync.Mutex{}, f}
+		wg := sync.WaitGroup{}
 		for s := range a {
-			fmt.Println(s)
-			var mutex sync.Mutex
-			go func() {
+			wg.Add(1)
+			go func(s string) {
+				fmt.Println(s)
 				statusCode, content, err := models.HttpGetGetValue("http://" + s + ":27777/verifyDownloadFile?filename=" +
 					sendFileName + "&downloadDir=" + sendFilePath)
-				mutex.Lock()
 				if err != nil {
-					models.WriteFileAppend("下发日志="+sendFileName+".log", sendFileName+" "+" 发送失败 主机("+s+")目录("+sendFilePath+")\n")
+					fmt.Fprintln(wr, sendFileName+" "+" 发送失败 主机("+s+")目录("+sendFilePath+")\n")
+					wg.Done()
 					return
 				}
 				if statusCode == 200 {
 					if content == "true" {
-						models.WriteFileAppend("下发日志="+sendFileName+".log", sendFileName+" "+" 发送成功 主机("+s+")目录("+sendFilePath+")\n")
+						fmt.Fprintln(wr, sendFileName+" "+" 发送成功 主机("+s+")目录("+sendFilePath+")\n")
+						wg.Done()
 					} else {
-						models.WriteFileAppend("下发日志="+sendFileName+".log", sendFileName+" "+" 发送失败 主机("+s+")目录("+sendFilePath+")\n")
+						fmt.Fprintln(wr, sendFileName+" "+" 发送失败 主机("+s+")目录("+sendFilePath+")\n")
+						wg.Done()
 					}
+				} else {
+					fmt.Fprintln(wr, sendFileName+" "+" 发送失败 主机("+s+")目录("+sendFilePath+")\n")
+					wg.Done()
 				}
-				mutex.Unlock()
-			}()
+			}(s)
 		}
+		wg.Wait()
+
 	})
 
 	downloaderBox := container.NewVBox(downloaderBt, verifyDownloaderFileBt)
@@ -747,4 +759,16 @@ func execCmdPost(ipAddr string, cmdContent string) {
 			fmt.Println("不是json字符串")
 		}
 	}
+}
+
+//多线程写入数据
+type SyncWriter struct {
+	m      sync.Mutex
+	Writer io.Writer
+}
+
+func (w *SyncWriter) Write(b []byte) (n int, err error) {
+	w.m.Lock()
+	defer w.m.Unlock()
+	return w.Writer.Write(b)
 }

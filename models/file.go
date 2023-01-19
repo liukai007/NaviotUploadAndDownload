@@ -72,6 +72,8 @@ func WriteFileAppend(fileName, content string) {
 	write.Flush()
 }
 
+//多线程写入字符串
+
 //读取文件内容
 //适合小文件读取
 func GetSmallFileContent(fileName string) string {
