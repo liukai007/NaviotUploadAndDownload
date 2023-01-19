@@ -503,7 +503,7 @@ func MainShow(w fyne.Window) {
 			//http://127.0.0.1:7777/downloadFile?filename=ubuntu-18.04.4-desktop-amd64.iso&downloadDir=E:\down
 			sendFileName := path.Base(entry1.Text)
 			sendFilePath := entrySendPath.Text
-			go func() {
+			go func(s string) {
 				err := models.HttpGet("http://" + s + ":27777/downloadFile?filename=" +
 					sendFileName + "&downloadDir=" + sendFilePath)
 				if err != nil {
@@ -512,7 +512,7 @@ func MainShow(w fyne.Window) {
 					fmt.Println(s + " 链接成功")
 					time.Sleep(1000)
 				}
-			}()
+			}(s)
 		}
 	})
 	//下发成功日志
@@ -573,7 +573,16 @@ func MainShow(w fyne.Window) {
 			}(s)
 		}
 		wg.Wait()
-
+		//需要一个弹框
+		multiLine := widget.NewMultiLineEntry()
+		multiLine.SetText("下发日志生成完毕")
+		content1 := container.NewVBox(
+			multiLine,
+		)
+		cd := dialog.NewCustom("提醒", "dismiss", content1, w)
+		cd.Resize(fyne.NewSize(170, 170))
+		cd.SetDismissText("关闭")
+		cd.Show()
 	})
 
 	downloaderBox := container.NewVBox(downloaderBt, verifyDownloaderFileBt)
