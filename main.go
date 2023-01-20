@@ -12,12 +12,12 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	common "fyne/common"
+	"fyne/models"
 	"github.com/flopp/go-findfont"
 	"io"
 	"io/ioutil"
 	"log"
-	"naviotUploadAndDownload/common"
-	"naviotUploadAndDownload/models"
 	"net/http"
 	"os"
 	"path"
@@ -585,7 +585,7 @@ func MainShow(w fyne.Window) {
 		cd.Show()
 	})
 
-	downloaderBox := container.NewVBox(downloaderBt, verifyDownloaderFileBt)
+	downloaderBox := container.NewHBox(downloaderBt, verifyDownloaderFileBt)
 	downloaderBoxCenter := container.NewCenter(downloaderBox)
 	/****下发 end**************/
 
