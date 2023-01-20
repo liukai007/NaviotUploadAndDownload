@@ -30,44 +30,6 @@ import (
 var confs = &common.ServiceConfig{}
 var globalWait1 sync.WaitGroup
 
-func findRetrySeq(dirPath string, metadata *common.FileMetadata) []int {
-	slices := []int{}
-
-	// 获取已保存的文件片序号
-	storeSeq := make(map[string]bool)
-	files, _ := ioutil.ReadDir(dirPath)
-	for _, file := range files {
-		_, err := strconv.Atoi(file.Name())
-		if err != nil {
-			fmt.Println("文件片有错", err, file.Name())
-			continue
-		}
-		storeSeq[file.Name()] = true
-	}
-
-	i := 0
-	for ; i < int(metadata.SliceNum) && len(storeSeq) > 0; i++ {
-		indexStr := strconv.Itoa(i)
-		if _, ok := storeSeq[indexStr]; ok {
-			delete(storeSeq, indexStr)
-		} else {
-			slices = append(slices, i)
-		}
-	}
-
-	// -1指代slices的最大数字序号到最后一片都没有收到
-	if i < int(metadata.SliceNum) {
-		slices = append(slices, i)
-		i += 1
-		if i < int(metadata.SliceNum) {
-			slices = append(slices, -1)
-		}
-	}
-
-	fmt.Println("还需重传的片", slices)
-	return slices
-}
-
 func download(w http.ResponseWriter, request *http.Request) {
 	//文件名
 	filename := request.FormValue("filename")
@@ -462,34 +424,96 @@ func MainShow(w fyne.Window) {
 		fd.Show() //控制是否弹出选择文件目录对话框
 	})
 	uploaderFilePathAndBtn := container.NewBorder(layout.NewSpacer(), layout.NewSpacer(), uploaderFilePath, uploaderFileDia1, uploaderFileEntry)
+	//是否覆盖已经上传过的
+	//https://www.bilibili.com/video/BV1Hy4y1g7iv
+	isAgain := false
+	chk1 := widget.NewCheck("覆盖上传", nil)
+	chk1.OnChanged = func(b bool) {
+		if chk1.Checked {
+			isAgain = true
+		} else {
+			isAgain = false
+		}
+	}
+	//上传按钮
 	uploaderBt3 := widget.NewButton("上传", func() {
 		content := strings.TrimSpace(uploaderFileEntry.Text)
 		if content == "" {
 			fmt.Println("上传文件路径不能为空")
+			//需要一个弹框
+			multiLine := widget.NewMultiLineEntry()
+			multiLine.SetText("上传路径为空")
+			content1 := container.NewVBox(
+				multiLine,
+			)
+			cd := dialog.NewCustom("提醒", "dismiss", content1, w)
+			cd.Resize(fyne.NewSize(170, 170))
+			cd.SetDismissText("关闭")
+			cd.Show()
 			return
 		}
-		common.ShardFile(content, false)
+		common.ShardFile(content, isAgain)
+		//需要一个弹框
+		multiLine := widget.NewMultiLineEntry()
+		multiLine.SetText("上传完毕")
+		content1 := container.NewVBox(
+			multiLine,
+		)
+		cd := dialog.NewCustom("提醒", "dismiss", content1, w)
+		cd.Resize(fyne.NewSize(170, 170))
+		cd.SetDismissText("关闭")
+		cd.Show()
 	})
-	uploaderBox := container.NewVBox(uploaderBt3)
+	uploaderBox := container.NewHBox(chk1, uploaderBt3)
 	uploaderBoxCenter := container.NewCenter(uploaderBox)
 
 	/****上传 end**************/
 
 	/****下发 start**************/
+	isAgainDownload := false
+	chk2 := widget.NewCheck("覆盖下发", nil)
+	chk2.OnChanged = func(b bool) {
+		if chk2.Checked {
+			isAgainDownload = true
+		} else {
+			isAgainDownload = false
+		}
+	}
+
 	downloaderBt := widget.NewButton("下发", func() {
 		fmt.Println("检测是否已经上传过,没有上传就先上传")
 		content := strings.TrimSpace(entry1.Text)
 		if content == "" {
-			fmt.Println("上传文件路径不能为空")
+			fmt.Println("下发文件路径不能为空")
+			//需要一个弹框
+			multiLine := widget.NewMultiLineEntry()
+			multiLine.SetText("下发路径为空")
+			content1 := container.NewVBox(
+				multiLine,
+			)
+			cd := dialog.NewCustom("提醒", "dismiss", content1, w)
+			cd.Resize(fyne.NewSize(170, 170))
+			cd.SetDismissText("关闭")
+			cd.Show()
 			return
 		}
-		common.ShardFile(content, false)
+		common.ShardFile(content, isAgainDownload)
 
 		fmt.Println("开始下发,目前下发的IP有")
 		jsonStr := models.GetSmallFileContent("hostIpAddress.txt")
 		jsonStr = strings.TrimSpace(jsonStr)
 		if jsonStr == "" {
 			fmt.Println("没有需要下发的主机")
+			//需要一个弹框
+			multiLine := widget.NewMultiLineEntry()
+			multiLine.SetText("没有下发的主机")
+			content1 := container.NewVBox(
+				multiLine,
+			)
+			cd := dialog.NewCustom("提醒", "dismiss", content1, w)
+			cd.Resize(fyne.NewSize(170, 170))
+			cd.SetDismissText("关闭")
+			cd.Show()
 			return
 		}
 		strs := strings.Split(jsonStr, "\n")
@@ -521,6 +545,16 @@ func MainShow(w fyne.Window) {
 		content := strings.TrimSpace(entry1.Text)
 		if content == "" {
 			fmt.Println("下发日志生成失败，下发文件路径为空")
+			//需要一个弹框
+			multiLine := widget.NewMultiLineEntry()
+			multiLine.SetText("下发路径为空")
+			content1 := container.NewVBox(
+				multiLine,
+			)
+			cd := dialog.NewCustom("提醒", "dismiss", content1, w)
+			cd.Resize(fyne.NewSize(170, 170))
+			cd.SetDismissText("关闭")
+			cd.Show()
 			return
 		}
 		fmt.Println("开始下发,目前下发的IP有")
@@ -585,7 +619,7 @@ func MainShow(w fyne.Window) {
 		cd.Show()
 	})
 
-	downloaderBox := container.NewHBox(downloaderBt, verifyDownloaderFileBt)
+	downloaderBox := container.NewHBox(chk2, downloaderBt, verifyDownloaderFileBt)
 	downloaderBoxCenter := container.NewCenter(downloaderBox)
 	/****下发 end**************/
 
@@ -616,6 +650,16 @@ func MainShow(w fyne.Window) {
 		jsonStr = strings.TrimSpace(jsonStr)
 		if jsonStr == "" {
 			fmt.Println("没有需要下发的主机")
+			//需要一个弹框
+			multiLine := widget.NewMultiLineEntry()
+			multiLine.SetText("没有下发的主机")
+			content1 := container.NewVBox(
+				multiLine,
+			)
+			cd := dialog.NewCustom("提醒", "dismiss", content1, w)
+			cd.Resize(fyne.NewSize(170, 170))
+			cd.SetDismissText("关闭")
+			cd.Show()
 			return
 		}
 		strs := strings.Split(jsonStr, "\n")
