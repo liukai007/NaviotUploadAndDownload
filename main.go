@@ -37,7 +37,7 @@ func download(w http.ResponseWriter, request *http.Request) {
 	dirStr := request.FormValue("dirStr")
 
 	//打开文件
-	filePath := path.Join(confs.StoreDir, dirStr, filename)
+	filePath := path.Join(common.UploadDir, dirStr, filename)
 	file, err := os.Open(filePath)
 	if err != nil {
 		fmt.Printf("打开文件%s失败, err:%s\n", filePath, err)
@@ -68,7 +68,7 @@ func downloadBySlice(w http.ResponseWriter, request *http.Request) {
 		http.Error(w, "分片文件下载失败", http.StatusBadRequest)
 	}
 
-	sliceFile := path.Join(confs.StoreDir, metadata.Fid, sliceIndex)
+	sliceFile := path.Join(common.UploadDir, metadata.Fid, sliceIndex)
 	if !common.IsFile(sliceFile) {
 		fmt.Println("文件切片不存在", sliceFile)
 		http.Error(w, "文件异常", http.StatusBadRequest)
@@ -152,7 +152,7 @@ func MainShow(w fyne.Window) {
 	localHostUploadDir.Wrapping = fyne.TextWrapBreak
 	localHostUploadDir.TextStyle = fyne.TextStyle{Bold: true}
 	localHostUploadDir.SetPlaceHolder("本机上传目录")
-	localHostUploadDir.SetText("E:/store")
+	localHostUploadDir.SetText(confs.StoreDir)
 
 	currentIp := widget.NewLabel("本机IP:")
 	otherIpAndSubnetMask := widget.NewLabel("其他IP/SubnetMask可以多个，使用逗号隔开:\n例如: 172.168.0.1/255.255.255.0,192.168.1.1/255.255.255.0")
@@ -381,9 +381,24 @@ func MainShow(w fyne.Window) {
 	//本机上传目录确认按钮
 	localHostUploadDirBt := widget.NewButton("确认", func() {
 		fmt.Println("确认当前路径")
+		localHostUploadDir11 := strings.TrimSpace(localHostUploadDir.Text)
+		if localHostUploadDir11 == "" {
+			//需要一个弹框
+			multiLine := widget.NewMultiLineEntry()
+			multiLine.SetText("本机上传目录为空\n或者不存在")
+			content1 := container.NewVBox(
+				multiLine,
+			)
+			cd := dialog.NewCustom("提醒", "dismiss", content1, w)
+			cd.Resize(fyne.NewSize(170, 170))
+			cd.SetDismissText("关闭")
+			cd.Show()
+			return
+		}
 		//localHostUploadDir里面的路径保存在文档里面
 		models.RemoveFile("config.json")
 		models.WriteFile("config.json", "{\"Port\":800,\"Address\":\"0.0.0.0\",\"StoreDir\":\""+localHostUploadDir.Text+"\"}")
+		common.UploadDir = localHostUploadDir11
 	})
 	localHostUploadDirTmp := container.NewBorder(layout.NewSpacer(), layout.NewSpacer(), localHostUploadDirLabel, localHostUploadDirBt, localHostUploadDir)
 	/*本机上传目录确定---结束*/
@@ -797,6 +812,12 @@ func main() {
 	//a.SetIcon(resourceIconPng)
 	//新建一个窗口
 	w := a.NewWindow("NAVIoT自发现程序V1.0")
+	flag.Parse()
+	loadConfig(*configPath)
+	if !common.IsDir(confs.StoreDir) {
+		fmt.Println("目录不存在:" + confs.StoreDir)
+		os.Mkdir(confs.StoreDir, 0777)
+	}
 	//主界面框架布局
 	MainShow(w)
 	//尺寸
@@ -811,6 +832,7 @@ func main() {
 			fmt.Println("目录不存在:" + confs.StoreDir)
 			os.Mkdir(confs.StoreDir, 0777)
 		}
+		common.UploadDir = confs.StoreDir
 		http.HandleFunc("/getFileMetaInfo", getFileMetaInfo)
 		http.HandleFunc("/download", download)
 		http.HandleFunc("/downloadBySlice", downloadBySlice)
