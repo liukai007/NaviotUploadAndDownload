@@ -146,17 +146,18 @@ var stopSearch = false
 func MainShow(w fyne.Window) {
 
 	title := widget.NewLabel("NAVIoT自发现程序")
+	//本机上传目录标签
+	localHostUploadDirLabel := widget.NewLabel("本机上传目录:")
+	localHostUploadDir := widget.NewEntry()
+	localHostUploadDir.Wrapping = fyne.TextWrapBreak
+	localHostUploadDir.TextStyle = fyne.TextStyle{Bold: true}
+	localHostUploadDir.SetPlaceHolder("本机上传目录")
+	localHostUploadDir.SetText("E:/store")
+
 	currentIp := widget.NewLabel("本机IP:")
 	otherIpAndSubnetMask := widget.NewLabel("其他IP/SubnetMask可以多个，使用逗号隔开:\n例如: 172.168.0.1/255.255.255.0,192.168.1.1/255.255.255.0")
 	otherIpAndSubnetMask1 := widget.NewLabel("")
 	hello := widget.NewLabel("单文件路径:")
-	//models.WriteFile("test1.txt", "{\"a\":\"a\"}")
-	//jsonStr := models.GetSmallFileContent("test1.txt")
-	//if json.Valid([]byte(jsonStr)) {
-	//	fmt.Println("是json字符串")
-	//} else {
-	//	fmt.Println("不是json字符串")
-	//}
 	//本机IP文本框
 	entryLocalIp := widget.NewEntry()           //文本输入框
 	entryOtherIpSubnetMask := widget.NewEntry() //文本输入框
@@ -188,27 +189,7 @@ func MainShow(w fyne.Window) {
 		fd.Show() //控制是否弹出选择文件目录对话框
 	})
 
-	text := widget.NewMultiLineEntry() //多行输入组件
-	//text.Disable()                     //禁用输入框，不能更改数据
-
 	labelLast := widget.NewLabel("LK    ALL Right Reserved")
-	//labelLast := widget.NewLabel(" ")
-	//label4 := widget.NewLabel("多文件路径:")
-	//entryFileList := widget.NewEntry()
-	//dia2 := widget.NewButton("下发文件夹", func() {
-	//	dialog.ShowFolderOpen(func(list fyne.ListableURI, err error) {
-	//		if err != nil {
-	//			dialog.ShowError(err, w)
-	//			return
-	//		}
-	//		if list == nil {
-	//			log.Println("Cancelled")
-	//			return
-	//		}
-	//		//设置输入框内容
-	//		entryFileList.SetText(list.Path())
-	//	}, w)
-	//})
 	//开始搜索按钮
 	bt3 := widget.NewButton("开始 搜索", func() {
 		stopSearch = false
@@ -227,7 +208,6 @@ func MainShow(w fyne.Window) {
 				break
 			}
 			wg2.Add(1)
-			//fmt.Printf("item = %v\n", i.Value)
 			ipAddressTmp := fmt.Sprint(i.Value)
 
 			go func() {
@@ -266,9 +246,7 @@ func MainShow(w fyne.Window) {
 						break
 					}
 					wg1.Add(1)
-					//fmt.Printf("item = %v\n", i.Value)
 					ipAddressTmp := fmt.Sprint(i.Value)
-
 					go func() {
 						err := models.HttpGet("http://" + ipAddressTmp + ":27777/ping")
 						if err != nil {
@@ -392,15 +370,23 @@ func MainShow(w fyne.Window) {
 	v01 := container.NewBorder(layout.NewSpacer(), layout.NewSpacer(), otherIpAndSubnetMask, layout.NewSpacer())
 	v02 := container.NewBorder(layout.NewSpacer(), layout.NewSpacer(), otherIpAndSubnetMask1, layout.NewSpacer(), entryOtherIpSubnetMask)
 	v1 := container.NewBorder(layout.NewSpacer(), layout.NewSpacer(), hello, dia1, entry1)
-	//SendPathNameSetting := container.NewBorder(layout.NewSpacer(), layout.NewSpacer(), labelSendPathName, entrySendPath)
 	SendPathNameSetting := container.NewBorder(nil, nil, labelSendPathName, layout.NewSpacer(), entrySendPath)
-	//v4 := container.NewBorder(layout.NewSpacer(), layout.NewSpacer(), label4, dia2, entryFileList)
 	execCmdContent := container.NewBorder(nil, nil, labelExecCmd, layout.NewSpacer(), entryExecCmd)
 	smartHostIp := container.NewBorder(nil, nil, labelSmartHostIp, layout.NewSpacer())
 	smartHostIp1 := container.NewBorder(nil, nil, nil, layout.NewSpacer(), entrySmartHostIp)
 
 	v5 := container.NewHBox(bt3, bt5)
 	v5Center := container.NewCenter(v5)
+	/*本机上传目录确定---开始*/
+	//本机上传目录确认按钮
+	localHostUploadDirBt := widget.NewButton("确认", func() {
+		fmt.Println("确认当前路径")
+		//localHostUploadDir里面的路径保存在文档里面
+		models.RemoveFile("config.json")
+		models.WriteFile("config.json", "{\"Port\":800,\"Address\":\"0.0.0.0\",\"StoreDir\":\""+localHostUploadDir.Text+"\"}")
+	})
+	localHostUploadDirTmp := container.NewBorder(layout.NewSpacer(), layout.NewSpacer(), localHostUploadDirLabel, localHostUploadDirBt, localHostUploadDir)
+	/*本机上传目录确定---结束*/
 
 	/****上传 start**************/
 	//上传 一个上传按钮
@@ -567,7 +553,6 @@ func MainShow(w fyne.Window) {
 		}
 		for s := range a {
 			fmt.Println(s)
-			//http://127.0.0.1:7777/downloadFile?filename=ubuntu-18.04.4-desktop-amd64.iso&downloadDir=E:\down
 			sendFileName := path.Base(entry1.Text)
 			sendFilePath := entrySendPath.Text
 			go func(s string) {
@@ -761,19 +746,20 @@ func MainShow(w fyne.Window) {
 	execCmdBoxBoxCenter := container.NewCenter(execCmdBox)
 	/** 执行命令   end****/
 
-	ctnt := container.NewVBox(head, v0, v01, v02, v5Center,
+	ctnt := container.NewVBox(head, v0, v01, v02,
+		v5Center,
+		//localHostUploadDirTmpCenter,
+		localHostUploadDirTmp,
 		uploaderFilePathAndBtn, uploaderBoxCenter,
-		blank,
 		blank,
 		v1,
 		SendPathNameSetting,
 		downloaderBoxCenter,
-		//v4,
 		execCmdContent,
 		smartHostIp,
 		smartHostIp1,
 		execCmdBoxBoxCenter,
-		text, labelLast) //控制显示位置顺序
+		labelLast) //控制显示位置顺序
 	w.SetContent(ctnt)
 }
 
@@ -794,6 +780,8 @@ func init() {
 		}
 	}
 }
+
+var uploadDir string
 
 func main() {
 	var configPath *string
