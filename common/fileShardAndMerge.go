@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"math"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 )
@@ -16,15 +17,15 @@ func ShardFile(filePathStr string, isAgain bool) {
 	//是否重新上传
 	if isAgain {
 		fmt.Println("重新上传删除之前上传的文件")
-		fileMetadata1, err := LoadMetadata(UploadDir + "\\" + filepath.Base(filePathStr) + ".metaData")
+		fileMetadata1, err := LoadMetadata(path.Join(UploadDir, filepath.Base(filePathStr)+".metaData"))
 		if err == nil {
-			DelFileDir(UploadDir + "\\" + fileMetadata1.Fid)
-			DelFile(UploadDir + "\\" + filepath.Base(filePathStr) + ".metaData")
+			DelFileDir(path.Join(UploadDir, fileMetadata1.Fid))
+			DelFile(path.Join(UploadDir, filepath.Base(filePathStr)+".metaData"))
 		}
 	}
 	//判断文件是否已经上传过
 	base1 := filepath.Base(filePathStr)
-	if IsFile(UploadDir + "\\" + base1 + ".metaData") {
+	if IsFile(path.Join(UploadDir, base1+".metaData")) {
 		fmt.Println("同名文件已经上传过,不用再上传了,也不需要校验了")
 		return
 	}
@@ -35,7 +36,7 @@ func ShardFile(filePathStr string, isAgain bool) {
 		fmt.Println(err)
 	}
 	fileMetadata := ProduceMetaData(filePathStr)
-	StoreMetadata(UploadDir+"\\"+filepath.Base(filePathStr), &fileMetadata)
+	StoreMetadata(path.Join(UploadDir, filepath.Base(filePathStr)), &fileMetadata)
 
 	num := int(math.Ceil(float64(fileInfo.Size()) / float64(chunkSize)))
 
@@ -56,7 +57,7 @@ func ShardFile(filePathStr string, isAgain bool) {
 		}
 
 		fi.Read(b)
-		dirPathStr := UploadDir + "\\" + fileMetadata.Fid
+		dirPathStr := path.Join(UploadDir, fileMetadata.Fid)
 		if !IsDir(dirPathStr) {
 			err := os.Mkdir(dirPathStr, 0666)
 			if err != nil {
@@ -64,7 +65,7 @@ func ShardFile(filePathStr string, isAgain bool) {
 			}
 		}
 
-		f, err := os.OpenFile(dirPathStr+"\\"+strconv.Itoa(int(i))+".db", os.O_CREATE|os.O_WRONLY, os.ModePerm)
+		f, err := os.OpenFile(path.Join(dirPathStr, strconv.Itoa(int(i))+".db"), os.O_CREATE|os.O_WRONLY, os.ModePerm)
 		fmt.Println(strconv.Itoa(int(i)) + ".db" + "分片上传中")
 		if err != nil {
 			fmt.Println(err)
@@ -76,13 +77,13 @@ func ShardFile(filePathStr string, isAgain bool) {
 	fmt.Println("分片结束上传")
 	fi.Close()
 	//合并校验，校验之后删除合并文件，如果校验失败重新上传，重复最多3次
-	MergeFile(UploadDir+"\\"+filepath.Base(filePathStr), UploadDir+"\\"+fileMetadata.Fid, fileMetadata)
+	MergeFile(path.Join(UploadDir, filepath.Base(filePathStr)), path.Join(UploadDir, fileMetadata.Fid), fileMetadata)
 	//校验
-	verifyMD5Bool := VerifyFileMD5(fileMetadata, UploadDir+"\\"+filepath.Base(filePathStr))
-	DelFile(UploadDir + "\\" + filepath.Base(filePathStr))
+	verifyMD5Bool := VerifyFileMD5(fileMetadata, path.Join(UploadDir, filepath.Base(filePathStr)))
+	DelFile(path.Join(UploadDir, filepath.Base(filePathStr)))
 	if !verifyMD5Bool {
-		DelFile(UploadDir + "\\" + filepath.Base(filePathStr) + ".metaData")
-		DelFileDir(UploadDir + "\\" + fileMetadata.Fid)
+		DelFile(path.Join(UploadDir, filepath.Base(filePathStr)+".metaData"))
+		DelFileDir(path.Join(UploadDir, fileMetadata.Fid))
 	}
 }
 
