@@ -452,6 +452,20 @@ func MainShow(w fyne.Window) {
 			cd.Show()
 			return
 		}
+		//单文件
+		if !common.IsFile(content) {
+			//需要一个弹框
+			multiLine := widget.NewMultiLineEntry()
+			multiLine.SetText("单文件不存在")
+			content1 := container.NewVBox(
+				multiLine,
+			)
+			cd := dialog.NewCustom("提醒", "dismiss", content1, w)
+			cd.Resize(fyne.NewSize(170, 170))
+			cd.SetDismissText("关闭")
+			cd.Show()
+			return
+		}
 		common.ShardFile(content, isAgain)
 		//需要一个弹框
 		multiLine := widget.NewMultiLineEntry()
@@ -487,7 +501,36 @@ func MainShow(w fyne.Window) {
 			fmt.Println("下发文件路径不能为空")
 			//需要一个弹框
 			multiLine := widget.NewMultiLineEntry()
-			multiLine.SetText("下发路径为空")
+			multiLine.SetText("单文件路径为空")
+			content1 := container.NewVBox(
+				multiLine,
+			)
+			cd := dialog.NewCustom("提醒", "dismiss", content1, w)
+			cd.Resize(fyne.NewSize(170, 170))
+			cd.SetDismissText("关闭")
+			cd.Show()
+			return
+		}
+		//单文件
+		if !common.IsFile(content) {
+			//需要一个弹框
+			multiLine := widget.NewMultiLineEntry()
+			multiLine.SetText("单文件不存在")
+			content1 := container.NewVBox(
+				multiLine,
+			)
+			cd := dialog.NewCustom("提醒", "dismiss", content1, w)
+			cd.Resize(fyne.NewSize(170, 170))
+			cd.SetDismissText("关闭")
+			cd.Show()
+			return
+		}
+		entrySendPathContent := strings.TrimSpace(entrySendPath.Text)
+		if entrySendPathContent == "" {
+			fmt.Println("下发文件路径不能为空")
+			//需要一个弹框
+			multiLine := widget.NewMultiLineEntry()
+			multiLine.SetText("下发文件目录为空")
 			content1 := container.NewVBox(
 				multiLine,
 			)
@@ -547,7 +590,36 @@ func MainShow(w fyne.Window) {
 			fmt.Println("下发日志生成失败，下发文件路径为空")
 			//需要一个弹框
 			multiLine := widget.NewMultiLineEntry()
-			multiLine.SetText("下发路径为空")
+			multiLine.SetText("单文件路径为空")
+			content1 := container.NewVBox(
+				multiLine,
+			)
+			cd := dialog.NewCustom("提醒", "dismiss", content1, w)
+			cd.Resize(fyne.NewSize(170, 170))
+			cd.SetDismissText("关闭")
+			cd.Show()
+			return
+		}
+		//单文件
+		if !common.IsFile(content) {
+			//需要一个弹框
+			multiLine := widget.NewMultiLineEntry()
+			multiLine.SetText("单文件不存在")
+			content1 := container.NewVBox(
+				multiLine,
+			)
+			cd := dialog.NewCustom("提醒", "dismiss", content1, w)
+			cd.Resize(fyne.NewSize(170, 170))
+			cd.SetDismissText("关闭")
+			cd.Show()
+			return
+		}
+		entrySendPathContent := strings.TrimSpace(entrySendPath.Text)
+		if entrySendPathContent == "" {
+			fmt.Println("下发文件路径不能为空")
+			//需要一个弹框
+			multiLine := widget.NewMultiLineEntry()
+			multiLine.SetText("下发文件目录为空")
 			content1 := container.NewVBox(
 				multiLine,
 			)
@@ -562,6 +634,17 @@ func MainShow(w fyne.Window) {
 		jsonStr = strings.TrimSpace(jsonStr)
 		if jsonStr == "" {
 			fmt.Println("下发日志生成失败，没有需要下发的主机")
+			fmt.Println("没有需要下发的主机")
+			//需要一个弹框
+			multiLine := widget.NewMultiLineEntry()
+			multiLine.SetText("没有下发的主机")
+			content1 := container.NewVBox(
+				multiLine,
+			)
+			cd := dialog.NewCustom("提醒", "dismiss", content1, w)
+			cd.Resize(fyne.NewSize(170, 170))
+			cd.SetDismissText("关闭")
+			cd.Show()
 			return
 		}
 		strs := strings.Split(jsonStr, "\n")
