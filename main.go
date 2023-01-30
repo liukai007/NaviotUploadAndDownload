@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -724,7 +725,7 @@ func MainShow(w fyne.Window) {
 				s := ipList[i]
 				fmt.Println("执行IP: " + s)
 				globalWait1.Add(1)
-				go execCmdPost(s, entryExecCmd.Text)
+				go execCmdPost(s, entryExecCmd.Text, w)
 			}
 			globalWait1.Wait()
 			return
@@ -753,7 +754,7 @@ func MainShow(w fyne.Window) {
 		}
 		for s := range a {
 			globalWait1.Add(1)
-			go execCmdPost(s, entryExecCmd.Text)
+			go execCmdPost(s, entryExecCmd.Text, w)
 		}
 		globalWait1.Wait()
 	})
@@ -877,8 +878,22 @@ func execCmd(ipAddr string, cmdContent string) {
 	}
 }
 
-func execCmdPost(ipAddr string, cmdContent string) {
+func execCmdPost(ipAddr string, cmdContent string, w fyne.Window) {
 	defer globalWait1.Done()
+	pattern := "rm *-rf */(root|dev|boot|etc|home|lost\\+found|media|mnt|opt|proc|run|snap|srv|sys|tmp|usr|var)/{0,}$"
+	result, _ := regexp.MatchString(pattern, cmdContent)
+	if result {
+		//需要一个弹框
+		multiLine := widget.NewMultiLineEntry()
+		multiLine.SetText("删除命令权限不足")
+		content1 := container.NewVBox(
+			multiLine,
+		)
+		cd := dialog.NewCustom("提醒", "dismiss", content1, w)
+		cd.Resize(fyne.NewSize(170, 170))
+		cd.SetDismissText("关闭")
+		cd.Show()
+	}
 	config := map[string]interface{}{}
 	config["cmdContent"] = cmdContent
 	configData, _ := json.Marshal(config)
