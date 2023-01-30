@@ -893,6 +893,7 @@ func execCmdPost(ipAddr string, cmdContent string, w fyne.Window) {
 		cd.Resize(fyne.NewSize(170, 170))
 		cd.SetDismissText("关闭")
 		cd.Show()
+		fmt.Println("删除命令权限不足,直接返回")
 		return
 	}
 	config := map[string]interface{}{}
