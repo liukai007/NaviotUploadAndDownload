@@ -211,7 +211,7 @@ func MainShow(w fyne.Window) {
 			wg2.Add(1)
 			ipAddressTmp := fmt.Sprint(i.Value)
 
-			go func() {
+			go func(ipAddressTmp string) {
 				defer wg2.Done()
 				err := models.HttpGet("http://" + ipAddressTmp + ":27777/ping")
 				if err != nil {
@@ -220,7 +220,7 @@ func MainShow(w fyne.Window) {
 					fmt.Println(ipAddressTmp + " 链接成功")
 					models.WriteFileAppend("hostIpAddress.txt", ipAddressTmp+"\n")
 				}
-			}()
+			}(ipAddressTmp)
 		}
 		wg2.Wait()
 		//其他IP和subnetMark
@@ -248,7 +248,7 @@ func MainShow(w fyne.Window) {
 					}
 					wg1.Add(1)
 					ipAddressTmp := fmt.Sprint(i.Value)
-					go func() {
+					go func(ipAddressTmp string) {
 						defer wg1.Done()
 						err := models.HttpGet("http://" + ipAddressTmp + ":27777/ping")
 						if err != nil {
@@ -257,7 +257,7 @@ func MainShow(w fyne.Window) {
 							fmt.Println(ipAddressTmp + " 链接成功")
 							models.WriteFileAppend("hostIpAddress.txt", ipAddressTmp+"\n")
 						}
-					}()
+					}(ipAddressTmp)
 				}
 			}
 		}
@@ -297,7 +297,7 @@ func MainShow(w fyne.Window) {
 			//fmt.Printf("item = %v\n", i.Value)
 			ipAddressTmp := fmt.Sprint(i.Value)
 
-			go func() {
+			go func(ipAddressTmp string) {
 				defer wg.Done()
 				err := models.HttpGet("http://" + ipAddressTmp + ":27777/ping")
 				if err != nil {
@@ -306,7 +306,7 @@ func MainShow(w fyne.Window) {
 					fmt.Println(ipAddressTmp + " 链接成功")
 					models.WriteFileAppend("hostIpAddress.txt", ipAddressTmp+"\n")
 				}
-			}()
+			}(ipAddressTmp)
 		}
 		wg.Wait()
 
@@ -337,7 +337,7 @@ func MainShow(w fyne.Window) {
 					//fmt.Printf("item = %v\n", i.Value)
 					ipAddressTmp := fmt.Sprint(i.Value)
 
-					go func() {
+					go func(ipAddressTmp string) {
 						defer wg1.Done()
 						err := models.HttpGet("http://" + ipAddressTmp + ":27777/ping")
 						if err != nil {
@@ -347,7 +347,7 @@ func MainShow(w fyne.Window) {
 							models.WriteFileAppend("hostIpAddress.txt", ipAddressTmp+"\n")
 						}
 
-					}()
+					}(ipAddressTmp)
 				}
 			}
 		}
