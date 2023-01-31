@@ -212,6 +212,7 @@ func MainShow(w fyne.Window) {
 			ipAddressTmp := fmt.Sprint(i.Value)
 
 			go func() {
+				defer wg2.Done()
 				err := models.HttpGet("http://" + ipAddressTmp + ":27777/ping")
 				if err != nil {
 					fmt.Println(ipAddressTmp + " 链接异常")
@@ -219,7 +220,6 @@ func MainShow(w fyne.Window) {
 					fmt.Println(ipAddressTmp + " 链接成功")
 					models.WriteFileAppend("hostIpAddress.txt", ipAddressTmp+"\n")
 				}
-				wg2.Done()
 			}()
 		}
 		wg2.Wait()
@@ -249,6 +249,7 @@ func MainShow(w fyne.Window) {
 					wg1.Add(1)
 					ipAddressTmp := fmt.Sprint(i.Value)
 					go func() {
+						defer wg1.Done()
 						err := models.HttpGet("http://" + ipAddressTmp + ":27777/ping")
 						if err != nil {
 							fmt.Println(ipAddressTmp + " 链接异常")
@@ -256,7 +257,6 @@ func MainShow(w fyne.Window) {
 							fmt.Println(ipAddressTmp + " 链接成功")
 							models.WriteFileAppend("hostIpAddress.txt", ipAddressTmp+"\n")
 						}
-						wg1.Done()
 					}()
 				}
 			}
@@ -298,6 +298,7 @@ func MainShow(w fyne.Window) {
 			ipAddressTmp := fmt.Sprint(i.Value)
 
 			go func() {
+				defer wg.Done()
 				err := models.HttpGet("http://" + ipAddressTmp + ":27777/ping")
 				if err != nil {
 					fmt.Println(ipAddressTmp + " 链接异常")
@@ -305,7 +306,6 @@ func MainShow(w fyne.Window) {
 					fmt.Println(ipAddressTmp + " 链接成功")
 					models.WriteFileAppend("hostIpAddress.txt", ipAddressTmp+"\n")
 				}
-				wg.Done()
 			}()
 		}
 		wg.Wait()
@@ -338,6 +338,7 @@ func MainShow(w fyne.Window) {
 					ipAddressTmp := fmt.Sprint(i.Value)
 
 					go func() {
+						defer wg1.Done()
 						err := models.HttpGet("http://" + ipAddressTmp + ":27777/ping")
 						if err != nil {
 							fmt.Println(ipAddressTmp + " 链接异常")
@@ -345,7 +346,7 @@ func MainShow(w fyne.Window) {
 							fmt.Println(ipAddressTmp + " 链接成功")
 							models.WriteFileAppend("hostIpAddress.txt", ipAddressTmp+"\n")
 						}
-						wg1.Done()
+
 					}()
 				}
 			}
