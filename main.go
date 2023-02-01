@@ -881,7 +881,7 @@ func execCmd(ipAddr string, cmdContent string) {
 
 func execCmdPost(ipAddr string, cmdContent string, w fyne.Window) {
 	defer globalWait1.Done()
-	pattern := "rm *-rf */(root|dev|boot|etc|home|lost\\+found|media|mnt|opt|proc|run|snap|srv|sys|tmp|usr|var)/{0,}$"
+	pattern := "rm *-rf */(root|dev|boot|etc|home|lost\\+found|media|mnt|opt|proc|run|snap|srv|sys|tmp|usr|var)\\*{0,}/{0,}\\*{0,}$"
 	result, _ := regexp.MatchString(pattern, cmdContent)
 	if result {
 		//需要一个弹框
